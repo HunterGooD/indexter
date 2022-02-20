@@ -9,13 +9,22 @@ type App struct {
 
 func NewApp() *App {
 	ui := NewUI()
-	ui.Init()
-	ui.StartApp()
 
+	return &App{ui: ui}
+}
+
+func (a *App) Run() error {
+	a.ui.Init()
+	err := a.ui.StartApp()
+	if err != nil {
+		return err
+	}
 	dir, err := os.UserHomeDir()
 	if err != nil {
 		// TODO: Modal window error get home dir
-		ui.ShowModal("Не удается получить домашнею директорию", []string{"Закрыть"})
+		a.ui.ShowModal("Не удается получить домашнею директорию", []string{"Закрыть"})
 	}
-	return &App{dir, ui}
+	a.homePath = dir
+	//TODO: a.ui.setDir
+	return nil
 }

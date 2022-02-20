@@ -10,9 +10,11 @@ import (
 
 type UI struct {
 	app    *tview.Application
-	layout *tview.Flex
-	pages  *tview.Pages
-	info   *tview.TextView
+	layout *tview.Flex     // расположение основных деталей интерфейса
+	pages  *tview.Pages    // основные страницы с объктами
+	info   *tview.TextView // оглавление страниц
+
+	directoryTree *tview.TreeView
 }
 
 type Slide func(nextSlide func()) (title string, content tview.Primitive)
@@ -37,6 +39,7 @@ func (ui *UI) Init() {
 		SetHighlightedFunc(func(added, removed, remaining []string) {
 			ui.pages.SwitchToPage(added[0])
 		})
+	ui.info.SetTextColor(tcell.Color101)
 	previousSlide := func() {
 		slide, _ := strconv.Atoi(ui.info.GetHighlights()[0])
 		slide = (slide - 1 + len(slides)) % len(slides)
@@ -52,7 +55,7 @@ func (ui *UI) Init() {
 	for index, slide := range slides {
 		title, primitive := slide(nextSlide)
 		ui.pages.AddPage(strconv.Itoa(index), primitive, true, index == 0)
-		fmt.Fprintf(ui.info, `%d ["%d"][darkcyan]%s[white][""]  `, index+1, index, title)
+		fmt.Fprintf(ui.info, `%d ["%d"][cyan]%s[white][""]  `, index+1, index, title)
 	}
 	ui.info.Highlight("0")
 	ui.DefaultLayaout()
@@ -70,8 +73,7 @@ func (ui *UI) Init() {
 }
 
 func (ui *UI) StartApp() error {
-	err := ui.app.SetRoot(ui.layout, true).EnableMouse(true).Run()
-	return err
+	return ui.app.SetRoot(ui.layout, true).EnableMouse(true).Run()
 }
 
 func (ui *UI) ShowModal(text string, buttons []string) {
